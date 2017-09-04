@@ -28,33 +28,17 @@ maxout_kernel(T* pooled,
 {
   int pooledIndex = threadIdx.x + blockIdx.x * blockDim.x;
   if (pooledIndex < pooledVolume) {
-    /*int px = pooledIndex ;*/
-    /*int py = px / pooledWidth ;*/
-    /*int pz = py / pooledHeight ;*/
-    /*px %= pooledWidth ;*/
-    /*py %= pooledHeight ;*/
-    /*data += pz * (pooledWidth * pooledHeight) ;*/
-
-    printf("pooledIndex: %d\n", pooledIndex) ;
-    /*printf("pooledVolume: %d\n", pooledVolume) ;*/
     int area = pooledWidth * pooledHeight ;
     int s = pooledIndex % area ;  // spatial offset
     int u  = (pooledIndex / area) % numUnits ; // unit
-    int t = pooledIndex / (area * numUnits) ; // trial 
-    int offset = area * (u + t * numUnits * numPieces) ; // channel offset
-    printf("s: %d\n", s) ;
-    printf("u: %d\n", u) ;
-    printf("t: %d\n", t) ;
-    printf("offset: %d\n", offset) ;
-    printf("numPieces: %d\n", numPieces) ;
+    int b = pooledIndex / (area * numUnits) ; // batch elem 
+    int offset = area * (u * numPieces + b * numUnits * numPieces) ; 
     T bestValue = data[offset + s] ;  
     for (int k = 0; k < numPieces ; ++k) {     
-       int idx = area*(u + k*numUnits + t*numUnits*numPieces) + s ;
+       int idx = area*(k + u*numPieces + b*numUnits*numPieces) + s ;
        bestValue = max(bestValue, data[idx]) ;
-       printf("k: %d, idx: %d, p: %d, best: %g\n", k, idx, pooledIndex, bestValue) ;
     }
     pooled[pooledIndex] = bestValue ;
-    printf("storing: %g at pooledIndex: %d \n", pooled[pooledIndex], pooledIndex) ;
   }
 }
 

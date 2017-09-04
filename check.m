@@ -1,5 +1,5 @@
-p = 2 ; u = 2 ;
-x = randn(1,1, p*u, 1, 'single') ;
+p = 8 ; u = 8 ;
+x = randn(1,1, p*u, 3, 'single') ;
 
 y_cpu = vl_nnmaxout_matlab(x, p, u) ;
 
