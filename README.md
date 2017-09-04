@@ -7,13 +7,13 @@ Jia-Ren Chang, which can be found
 
 ### Notes
 
-Maxout is introduced in the paper:
+Maxout is introduced in the [paper](https://arxiv.org/pdf/1302.4389.pdf):
 
-  `Goodfellow, I. J., Warde-Farley, D., Mirza, M., Courville, A., & Bengio, Y. 
+  `Goodfellow, I. J., Warde-Farley, D., Mirza, M., Courville, A., & Bengio, Y.    
    (2013). Maxout networks. arXiv preprint arXiv:1302.4389.`
 
 This can be applied directly to the Network-in-Network architecture, as shown 
 in the [paper](https://arxiv.org/abs/1511.02583):
 
-  `Chang, J. R., & Chen, Y. S. (2015). Batch-normalized maxout network in network. 
+  `Chang, J. R., & Chen, Y. S. (2015). Batch-normalized maxout network in network.   
   arXiv preprint arXiv:1511.02583.`
