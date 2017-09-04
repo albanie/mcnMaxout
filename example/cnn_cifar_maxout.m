@@ -9,7 +9,7 @@ function [net, info] = cnn_cifar_maxout(varargin)
 % Licensed under The MIT License [see LICENSE.md for details]
 
   opts.gpus = 3 ;
-  opts.continue = 0 ;
+  opts.continue = 1 ;
   opts.whitenData = true ;
   opts.modelName = 'maxout' ;
   opts.contrastNormalization = true ;
@@ -49,12 +49,11 @@ function [net, info] = cnn_cifar_maxout(varargin)
     opts.train.numEpochs = 1 ;
   end
 
+  opts.train.val = find(imdb.images.set == 3) ;
   net.meta.classes.name = imdb.meta.classes(:)' ;
-  profile on ; 
   [net, info] = cnn_train_autonn(net, imdb, ...
                      @(i,b) getBatch(i, b, opts), ...
                      opts.train, 'expDir', opts.expDir) ;
-  profile viewer ;
 
 % -------------------------------------------------------------------------
 function inputs = getBatch(imdb, batch, opts)
