@@ -24,11 +24,11 @@ function y = vl_nnmaxout(x, units, pieces, varargin)
      y(:,:,i,:) = max(x(:,:, (i-1)*pieces +1 : i*pieces,:),[],3); 
    end
  else
-   y = zeros('like', x) ;
+   y = zeros(size(x), 'like', x) ;
    for i = 1:units 
-     seq = (i-1)*numpiece+1 : i*numpiece ;
+     seq = (i-1)*pieces + 1 : i * pieces ;
      L = max(x(:,:,seq,:),[],3) ;
      mask = bsxfun(@eq,x(:,:,seq,:),L) ;  
-     y(:,:,seq,:) = bsxfun(@times,mask,dzdy(:,:,i,:)) ;
+     y(:,:,seq,:) = bsxfun(@times,mask,dzdy{1}(:,:,i,:)) ;
    end  
  end

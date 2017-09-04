@@ -1,23 +1,37 @@
-function [net, info] = cnn_cifar(varargin)
-% CNN_CIFAR   Demonstrates MatConvNet on CIFAR-10
-%    The demo includes two standard model: LeNet and Network in
-%    Network (NIN). Use the 'modelType' option to choose one.
+function [net, info] = cnn_cifar_maxout(varargin)
+% CNN_CIFAR_MAXOUT train a simple maxout network on cifar
+%   [NET, INFO] = CNN_CIFAR_MAXOUT(VARARGIN) provides a simple example
+%   of training a maxout network on CIFAR.  
 
+%   This example is based on the `cnn_cifar.m` script provided in MatConvNet.
+%
+% Copyright (C) 2017 Samuel Albanie
+% Licensed under The MIT License [see LICENSE.md for details]
+
+  opts.gpus = 3 ;
+  opts.continue = 0 ;
   opts.whitenData = true ;
-  opts.train.gpus = 1 ;
   opts.modelName = 'maxout' ;
   opts.contrastNormalization = true ;
   opts.dataDir = fullfile(vl_rootnn, 'data','cifar') ;
   opts.expDir = fullfile(vl_rootnn, 'data', sprintf('cifar-%s', opts.modelName)) ;
   opts.imdbPath = fullfile(opts.expDir, 'imdb.mat');
+  opts.benchmark = false ; 
   opts = vl_argparse(opts, varargin) ;
 
+  % set learning rate
+  steady = 0.5 * ones(1,80) ;
+  gentle = 0.5:-0.005:0.005 ;
+  vGentle = 0.005:-0.0001:0.00005 ;
+  opts.train.learningRate = [steady gentle vGentle] ;
+
+  opts.train.gpus = opts.gpus ;
   opts.train.batchSize = 100 ;
   opts.train.numEpochs = 222;
-  opts.train.weightDecay = 0.0005;
-  opts.train.learningRate = [0.5*ones(1,80) 0.5:-0.005:0.005 0.005:-0.0001:0.00005];
+  opts.train.weightDecay = 0.0005 ;
+  opts.train.continue = opts.continue ;
 
-  net = cnn_cifar_init_mnin(opts) ;
+  net = cnn_init_maxout ;
 
   if exist(opts.imdbPath, 'file')
     imdb = load(opts.imdbPath) ;
@@ -27,10 +41,20 @@ function [net, info] = cnn_cifar(varargin)
     save(opts.imdbPath, '-struct', 'imdb') ;
   end
 
+  if opts.benchmark % dev-only
+    sample = 1000 ;
+    imdb.images.set = (imdb.images.set * 0) + 4 ;
+    imdb.images.set(1:sample) = 1 ;
+    imdb.images.set(sample+1:2 * sample) = 2 ;
+    opts.train.numEpochs = 1 ;
+  end
+
   net.meta.classes.name = imdb.meta.classes(:)' ;
+  profile on ; 
   [net, info] = cnn_train_autonn(net, imdb, ...
                      @(i,b) getBatch(i, b, opts), ...
                      opts.train, 'expDir', opts.expDir) ;
+  profile viewer ;
 
 % -------------------------------------------------------------------------
 function inputs = getBatch(imdb, batch, opts)
