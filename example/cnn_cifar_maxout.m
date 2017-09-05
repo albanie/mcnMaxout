@@ -5,7 +5,7 @@ function [net, info] = cnn_cifar_maxout(varargin)
 
 %   This example is based on the `cnn_cifar.m` script provided in MatConvNet.
 %
-% Copyright (C) 2017 Samuel Albanie
+% Copyright (C) 2017 Samuel Albanie and Jia-Ren Chang 
 % Licensed under The MIT License [see LICENSE.md for details]
 
   opts.gpus = 3 ;
