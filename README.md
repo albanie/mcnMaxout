@@ -38,5 +38,5 @@ in the [this work](https://arxiv.org/abs/1511.02583):
 It can also be used as an efficient strategy for network pruning (compression), as described
 in the [here](https://arxiv.org/pdf/1707.06838.pdf):
 
-`Rueda, F. M., Grzeszick, R., & Fink, G. A. (2017). Neuron Pruning for Compressing` 
+`Rueda, F. M., Grzeszick, R., & Fink, G. A. (2017). Neuron Pruning for Compressing`   
 `Deep Networks using Maxout Architectures. arXiv preprint arXiv:1707.06838.`
