@@ -16,7 +16,7 @@ vl_contrib('setup', 'mcnMaxout') ;
 vl_contrib('test', 'mcnMaxout') ; % optional
 ```
 
-Compilation is worthwhile, since the compiled `vl_nnmaxout` CUDA function is at least an order of magnitude faster than the naive MATLAB equivalent (currently `vl_nnmaxout` supports only GPU, and not CPU computation).  However, if speed is not an issue, a pure MATLAB implementation is also included (as `vl_nnmaxout_matlab`), which can be run on either the CPU or GPU.   
+Compilation is recommended, since the compiled `vl_nnmaxout` CUDA function is at least an order of magnitude faster than the naive MATLAB equivalent (currently `vl_nnmaxout` supports only GPU, and not CPU computation).  However, if speed is not an issue, a pure MATLAB implementation is also included (as `vl_nnmaxout_matlab`), which can be run on either the CPU or GPU.   
 
 The example code uses the [autonn](https://github.com/vlfeat/autonn) wrapper, which can also be installed with `vl_contrib`. 
 
