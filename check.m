@@ -1,10 +1,12 @@
-p = 8 ; u = 8 ;
-x = randn(1,1, p*u, 3, 'single') ;
+type = 'double' ;
+p = 7 ; u = 7 ; b = 3 ;
+x = randn(1,1, p*u, b, type) ;
+dzdy = randn(1,1,u, b, type) ;
 
-y_cpu = vl_nnmaxout_matlab(x, p, u) ;
+y_cpu = vl_nnmaxout_matlab(x, u, p, dzdy) ;
 
-x = gpuArray(x) ;
-y_gpu = gather(vl_nnmaxout(x, p, u, 'Verbose')) ;
+x = gpuArray(x) ; dzdy = gpuArray(dzdy) ;
+y_gpu = gather(vl_nnmaxout(x, u, p, dzdy)) ;
 
 fprintf('-----------\n') ;
 diff = y_gpu(:) - y_cpu(:) ;

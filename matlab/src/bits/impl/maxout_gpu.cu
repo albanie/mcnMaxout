@@ -19,19 +19,19 @@ Licensed under The MIT License [see LICENSE.md for details]
 
 template<typename T> __global__ void
 maxout_kernel(T* pooled,
- const T* data,
- const int pooledWidth,
- const int pooledHeight,
- const int pooledVolume,
- const int numUnits,
- const int numPieces)
+              const T* data,
+              const int pooledWidth,
+              const int pooledHeight,
+              const int pooledVolume,
+              const int numUnits,
+              const int numPieces)
 {
   int pooledIndex = threadIdx.x + blockIdx.x * blockDim.x;
   if (pooledIndex < pooledVolume) {
     int area = pooledWidth * pooledHeight ;
     int s = pooledIndex % area ;  // spatial offset
-    int u  = (pooledIndex / area) % numUnits ; // unit
-    int b = pooledIndex / (area * numUnits) ; // batch elem 
+    int u  = (pooledIndex / area) % numUnits ; // unit index
+    int b = pooledIndex / (area * numUnits) ; // batch index 
     int offset = area * (u * numPieces + b * numUnits * numPieces) ; 
     T bestValue = data[offset + s] ;  
     for (int k = 0; k < numPieces ; ++k) {     
@@ -44,28 +44,29 @@ maxout_kernel(T* pooled,
 
 template<typename T> __global__ void
 maxout_backward_kernel(T* derData,
- const T* data,
- const T* derPooled,
- const int pooledWidth,
- const int pooledHeight,
- const int pooledVolume,
- const int numUnits,
- const int numPieces)
+                      const T* data,
+                      const T* derPooled,
+                      const int pooledWidth,
+                      const int pooledHeight,
+                      const int pooledVolume,
+                      const int numUnits,
+                      const int numPieces)
 {
   int pooledIndex = threadIdx.x + blockIdx.x * blockDim.x;
-  printf("pooledIndex: %d\n", pooledIndex) ;
   if (pooledIndex < pooledVolume) {
-    int thx = pooledIndex % (pooledWidth*pooledHeight);  // which element in pooled
-    int ut  = (pooledIndex / (pooledWidth*pooledHeight)) % numUnits; //which unit
-    int ntr = pooledIndex / (pooledWidth*pooledHeight*numUnits); // which trial   
-    T bestValue = data[thx + pooledWidth*pooledHeight*(ut +  ntr*numUnits*numPieces)];  // GET value in data
-    int bestindex = 0;    
+    int area = pooledWidth * pooledHeight ;
+    int s = pooledIndex % area ;  // spatial offset
+    int u  = (pooledIndex / area) % numUnits ; // unit index
+    int b = pooledIndex / (area * numUnits) ; // batch index 
+    int offset = area * (u * numPieces + b * numUnits * numPieces) ; 
+    T bestValue = data[offset + s] ;  
+    int bestIndex = 0;    
     for (int k = 0; k < numPieces ; ++k) {
-      //T value = data[thx + pooledWidth*pooledHeight*(ut*numPieces+k)];
-      T value = data[thx + pooledWidth*pooledHeight*(ut + k*numUnits +  ntr*numUnits*numPieces)];
+      int idx = area*(k + u*numPieces + b*numUnits*numPieces) + s ;
+      T value = data[idx];
       if (value > bestValue) {
         bestValue = value ;
-        bestindex = k;    
+        bestIndex = k;    
       }
     }
     /*
@@ -76,9 +77,8 @@ maxout_backward_kernel(T* derData,
      output, or the maximal indexes.
      atomicAdd(add, val)
      */
-    int dain = thx + pooledWidth*pooledHeight*(ut + bestindex*numUnits +  ntr*numUnits*numPieces);
+    int dain = offset + s + area * bestIndex ;
     atomicAdd(derData + dain, derPooled[pooledIndex]) ;
-    //derData[dain] = derPooled[pooledIndex];
   }
 }
 
@@ -88,32 +88,32 @@ maxout_backward_kernel(T* derData,
 
 namespace vl { namespace impl {
 
-    template<typename T>
-    struct maxout<vl::VLDT_GPU,T>
-    {
-
+  template<typename T>
+  struct maxout<vl::VLDT_GPU,T>
+  {
     static vl::ErrorCode
-    forward(float* pooled,
-            float const* data,
+    forward(T* pooled,
+            T const* data,
             size_t height, size_t width, size_t depth,
             size_t numUnits, size_t numPieces)
     {
       int pooledWidth = width;
       int pooledHeight = height;
       int pooledVolume = pooledWidth * pooledHeight * depth / numPieces ;
-      maxout_kernel<float>
-        <<< vl::divideAndRoundUp(pooledVolume, VL_CUDA_NUM_THREADS), VL_CUDA_NUM_THREADS >>>
-        (pooled, data, pooledHeight, pooledWidth, pooledVolume, numUnits, numPieces) ;
+      maxout_kernel<T><<< vl::divideAndRoundUp(pooledVolume, 
+        VL_CUDA_NUM_THREADS), VL_CUDA_NUM_THREADS >>>(pooled, data, 
+          pooledHeight, pooledWidth, pooledVolume, numUnits, numPieces) ;
       cudaError_t status = cudaPeekAtLastError() ;
       return (status == cudaSuccess) ? vl::VLE_Success : vl::VLE_Cuda ;
     }
 
 /* ---------------------------------------------------------------- */
 /*                                                  maxout_backward */
-/* ---------------------------------------------------------------- */ static vl::ErrorCode
-    backward(float* derData,
-             float const* data,
-             float const* derPooled,
+/* ---------------------------------------------------------------- */ 
+    static vl::ErrorCode
+    backward(T* derData,
+             T const* data,
+             T const* derPooled,
              size_t height, size_t width, 
              size_t depth, size_t numUnits, 
              size_t numPieces)
@@ -121,16 +121,14 @@ namespace vl { namespace impl {
       int pooledWidth = width;
       int pooledHeight = height;
       int pooledVolume = pooledWidth * pooledHeight * depth /  numPieces;
-      maxout_backward_kernel<float>
-      <<< vl::divideAndRoundUp(pooledVolume, VL_CUDA_NUM_THREADS), VL_CUDA_NUM_THREADS >>>
-          (derData, data, derPooled,
-           pooledHeight, pooledWidth, pooledVolume,
-            numUnits, numPieces);
-
+      maxout_backward_kernel<T><<< vl::divideAndRoundUp(pooledVolume, 
+        VL_CUDA_NUM_THREADS), VL_CUDA_NUM_THREADS >>>(derData, data, 
+        derPooled, pooledHeight, pooledWidth, pooledVolume, numUnits, 
+          numPieces) ;
       cudaError_t status = cudaPeekAtLastError() ;
       return (status == cudaSuccess) ? vl::VLE_Success : vl::VLE_Cuda ;
     }
-} ;
+  } ;
 
 } } // namespace vl::impl
 

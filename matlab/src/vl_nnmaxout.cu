@@ -101,6 +101,8 @@ void mexFunction(int nout, mxArray *out[],
   data.init(in[IN_DATA]) ;
   if (backMode) { derOutput.init(in[IN_DEROUTPUT]) ; }
 
+
+
   if (backMode && ! vl::areCompatible(data, derOutput)) {
     mexErrMsgTxt("DATA and DEROUTPUT are not both CPU or GPU arrays.") ;
   }
@@ -120,9 +122,12 @@ void mexFunction(int nout, mxArray *out[],
                                                 data.getWidth(), 
                                                 numUnits, 
                                                 data.getSize()) ;
-
-  if (backMode && (derOutput != outputShape)) {
-    mexErrMsgTxt("DEROUTPUT dimensions are incompatible with X and POOL.") ;
+  vl::TensorShape derOutputShape = vl::TensorShape(derOutput.getHeight(),
+                                                derOutput.getWidth(), 
+                                                derOutput.getDepth(), 
+                                                derOutput.getSize()) ;
+  if (backMode && (derOutputShape != outputShape)) {
+    mexErrMsgTxt("DEROUTPUT dimensions are incompatible with X.") ;
   }
 
   /* Create output buffers */

@@ -3,7 +3,7 @@ function net = cnn_init_maxout
 %   NET = CNN_INIT_MAXOUT constructs a small classification network with 
 %   maxout units
 % 
-% Copyright (C) 2017 Samuel Albanie
+% Copyright (C) 2017 Samuel Albanie and Jia-Ren Chang
 % Licensed under The MIT License [see LICENSE.md for details]
 
   data = Input('data') ; labels = Input('label') ;
