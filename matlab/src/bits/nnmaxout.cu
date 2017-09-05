@@ -22,10 +22,10 @@ Licensed under The MIT License [see LICENSE.md for details]
 /*                                                 nnmaxout_forward */
 /* ---------------------------------------------------------------- */
 
-#define DISPATCH(deviceType, type) \
-status = vl::impl::maxout<deviceType, type>::forward \
-((type*)output.getMemory(), \
-(type const*)data.getMemory(), \
+#define DISPATCH(deviceType, T) \
+status = vl::impl::maxout<deviceType, T>::forward \
+((T*)output.getMemory(), \
+(T const*)data.getMemory(), \
 data.getHeight(), data.getWidth(), \
 data.getDepth() * data.getSize(), \
 numUnits, numPieces) ;

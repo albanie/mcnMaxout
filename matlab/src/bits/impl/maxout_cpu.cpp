@@ -63,8 +63,8 @@ namespace vl { namespace impl {
    {
 
    static vl::ErrorCode
-   forward(float* pooled,
-           float const* data,
+   forward(T* pooled,
+           T const* data,
            size_t height, size_t width, size_t depth,
            size_t numUnits, size_t numPieces)
    {
@@ -76,9 +76,9 @@ namespace vl { namespace impl {
 /* ---------------------------------------------------------------- */
 
    static vl::ErrorCode
-   backward(float* derData,
-            float const* data,
-            float const* derPooled,
+   backward(T* derData,
+            T const* data,
+            T const* derPooled,
             size_t height, size_t width, 
             size_t depth, size_t numUnits, 
             size_t numPieces)

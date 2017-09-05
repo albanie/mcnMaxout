@@ -11,25 +11,34 @@ function [net, info] = cnn_cifar_maxout(varargin)
   opts.gpus = 3 ;
   opts.continue = 1 ;
   opts.whitenData = true ;
-  opts.modelName = 'maxout' ;
   opts.contrastNormalization = true ;
+  opts.schedule = 'stairway' ;
   opts.dataDir = fullfile(vl_rootnn, 'data','cifar') ;
-  opts.expDir = fullfile(vl_rootnn, 'data', sprintf('cifar-%s', opts.modelName)) ;
-  opts.imdbPath = fullfile(opts.expDir, 'imdb.mat');
+  opts.imdbPath = fullfile(opts.dataDir, 'standard_imdb/imdb.mat');
   opts.benchmark = false ; 
   opts = vl_argparse(opts, varargin) ;
 
-  % set learning rate
-  steady = 0.5 * ones(1,80) ;
-  gentle = 0.5:-0.005:0.005 ;
-  vGentle = 0.005:-0.0001:0.00005 ;
-  opts.train.learningRate = [steady gentle vGentle] ;
+  expDir = fullfile(vl_rootnn, 'data/maxout/cifar', opts.schedule) ;
 
-  opts.train.gpus = opts.gpus ;
+  % set learning rate schedule
+  switch opts.schedule
+    case 'JRC'
+      steady = 0.5 * ones(1,80) ;
+      gentle = 0.5:-0.005:0.005 ;
+      vGentle = 0.005:-0.0001:0.00005 ;
+      opts.train.weightDecay = 0.0005 ;
+      caress = [] ;
+    case 'stairway'
+      steady = 0.5 * ones(1,50) ;
+      gentle = steady / 10 ;
+      vGentle = gentle / 10 ;
+      caress = vGentle / 10 ;
+  end
+
   opts.train.batchSize = 100 ;
-  opts.train.numEpochs = 222;
-  opts.train.weightDecay = 0.0005 ;
+  opts.train.gpus = opts.gpus ;
   opts.train.continue = opts.continue ;
+  opts.train.learningRate = [steady gentle vGentle caress] ;
 
   net = cnn_init_maxout ;
 
@@ -37,7 +46,7 @@ function [net, info] = cnn_cifar_maxout(varargin)
     imdb = load(opts.imdbPath) ;
   else
     imdb = getCifarImdb(opts) ;
-    mkdir(opts.expDir) ;
+    mkdir(fileparts(opts.imdbPath)) ;
     save(opts.imdbPath, '-struct', 'imdb') ;
   end
 
@@ -53,7 +62,7 @@ function [net, info] = cnn_cifar_maxout(varargin)
   net.meta.classes.name = imdb.meta.classes(:)' ;
   [net, info] = cnn_train_autonn(net, imdb, ...
                      @(i,b) getBatch(i, b, opts), ...
-                     opts.train, 'expDir', opts.expDir) ;
+                     opts.train, 'expDir', expDir) ;
 
 % -------------------------------------------------------------------------
 function inputs = getBatch(imdb, batch, opts)

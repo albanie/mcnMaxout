@@ -36,20 +36,3 @@ namespace vl { namespace impl {
   } 
 }
 #endif /* defined(VL_MAXOUT_H) */
-
-//#if ENABLE_GPU
-  //template<> vl::ErrorCode
-  //maxout_forward<vl::GPU, float>(float* pooled,
-                                 //float const* data,
-                                 //size_t height, size_t width, size_t depth,
-                                 //size_t numunit, size_t numpiece);
-
-  //template<> vl::ErrorCode
-  //maxout_backward<vl::GPU, float>(float* derData,
-                                  //float const* data,
-                                  //float const* derPooled,
-                                  //size_t height, size_t width, size_t depth,
-                                  //size_t numunit, size_t numpiece);
-
-//#endif
-

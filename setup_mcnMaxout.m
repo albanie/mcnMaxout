@@ -3,4 +3,4 @@ function setup_mcnMaxout()
 
   root = fileparts(mfilename('fullpath')) ;
   addpath(root, [root '/matlab']) ;
-  addpath([root '/example']) ;
+  addpath([root '/example'], [root '/matlab/mex']) ;

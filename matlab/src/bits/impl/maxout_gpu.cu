@@ -70,15 +70,12 @@ maxout_backward_kernel(T* derData,
       }
     }
     /*
-     Comment (from original pooling implementation): 
-     This is bad, but required to eliminate a race condition when writing
-     to bottom_diff.
-     Caffe goes the other way around, but requrires remembering the layer
-     output, or the maximal indexes.
-     atomicAdd(add, val)
-     */
+    NOTE: atomicAdds (as used in the pooling implementation) are only required 
+    for overlapping segments, are are therefore not needed to prevent race 
+    conditions in standard maxout
+    */
     int dain = offset + s + area * bestIndex ;
-    atomicAdd(derData + dain, derPooled[pooledIndex]) ;
+    derData[dain] += derPooled[pooledIndex] ;
   }
 }
 
