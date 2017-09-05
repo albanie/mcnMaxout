@@ -1,4 +1,4 @@
-### Maxout Networks
+# Maxout Networks
 
 This directory contains an implementation of the maxout unit and provides 
 a simple classification example on CIFAR-10.  It is based on code by 
