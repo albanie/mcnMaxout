@@ -34,10 +34,17 @@ if opts.enableGpu
   lib_src{end+1} = fullfile(mcn_root,'matlab','src','bits','impl','copy_gpu.cu') ;
   lib_src{end+1} = fullfile(mcn_root,'matlab','src','bits','datacu.cu') ;
 end
+
+% ----------------------
 % include required files
+% ----------------------
+% old style include - leave as comment in case users have different setup
+%if ~isfield(flags, 'cc'), flags.cc = {inc} ; else, flags.cc{end+1} = inc ; end 
+
+% new style include
 inc = sprintf('-I"%s"', fullfile(mcn_root,'matlab','src')) ;
-flags.base{end+1} = inc ;
-%if ~isfield(flags, 'cc'), flags.cc = {inc} ; else, flags.cc{end+1} = inc ; end
+inc_local = sprintf('-I"%s"', fullfile(root, 'src')) ;
+flags.base{end+1} = inc ; flags.base{end+1} = inc_local ;
 
 % Add module files
 lib_src{end+1} = fullfile(root,'src','bits',['nnmaxout.' ext]) ;
